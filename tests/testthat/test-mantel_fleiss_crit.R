@@ -51,15 +51,16 @@ test_that("mantel_fleiss_crit() works without strata", {
   )
 
   # Explicit stratum.
+  strata <- factor(rep("A", n))
   expect_silent(
-    result_1stratum <- mantel_fleiss_crit(grp, rsp, factor(rep("A", n)))
+    result_1stratum <- mantel_fleiss_crit(grp, rsp, strata)
   )
   expect_silent(
-    result_1stratum_det <- mantel_fleiss_crit(grp, rsp, factor(rep("A", n)), TRUE)
+    result_1stratum_val <- mantel_fleiss_crit(grp, rsp, strata, TRUE)
   )
 
   expect_identical(result, result_1stratum)
-  expect_identical(result_val, result_1stratum_det)
+  expect_identical(result_val, result_1stratum_val)
 
   expect_identical(result, FALSE)
   expect_identical(result_val, result, ignore_attr = TRUE)
