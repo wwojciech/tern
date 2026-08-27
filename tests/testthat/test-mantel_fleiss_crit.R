@@ -1,15 +1,14 @@
 test_that("mantel_fleiss_crit() works with multiple observations and strata", {
-  set.seed(123)
-  n <- 100
-  grp <- factor(sample(c("Active", "Control"), n, replace = TRUE))
-  rsp <- sample(c(TRUE, FALSE), n, replace = TRUE)
-  strata <- factor(sample(LETTERS[1:4], n, replace = TRUE))
+  tbl <- array(
+    c(9L, 8L, 6L, 9L, 6L, 5L, 8L, 5L, 5L, 5L, 5L, 4L, 11L, 5L, 7L, 2L),
+    dim = c(2L, 2L, 4L)
+  )
 
   expect_silent(
-    result <- mantel_fleiss_crit(grp, rsp, strata)
+    result <- mantel_fleiss_crit(tbl)
   )
   expect_silent(
-    result_val <- mantel_fleiss_crit(grp, rsp, strata, TRUE)
+    result_val <- mantel_fleiss_crit(tbl, TRUE)
   )
 
   expect_identical(result, TRUE)
@@ -17,18 +16,18 @@ test_that("mantel_fleiss_crit() works with multiple observations and strata", {
   expect_equal(attributes(result_val), list(value = 20.16857), tolerance = 1e-6)
 })
 
-test_that("mantel_fleiss_crit() works with small stratified data", {
-  set.seed(123)
-  n <- 20
-  grp <- factor(sample(c("Active", "Control"), n, replace = TRUE))
-  rsp <- sample(c(TRUE, FALSE), n, replace = TRUE)
-  strata <- factor(sample(LETTERS[1:4], n, replace = TRUE))
+test_that("mantel_fleiss_crit() works with small stratified data and dimnames", {
+  tbl <- array(
+    c(2L, 2L, 1L, 2L, 0L, 1L, 2L, 1L, 1L, 1L, 3L, 1L, 1L, 0L, 1L, 1L),
+    dim = c(2L, 2L, 4L),
+    dimnames = list(grp = c("Gr1", "Gr2"), rsp = c("T", "F"), strata = LETTERS[1:4])
+  )
 
   expect_silent(
-    result <- mantel_fleiss_crit(grp, rsp, strata)
+    result <- mantel_fleiss_crit(tbl)
   )
   expect_silent(
-    result_val <- mantel_fleiss_crit(grp, rsp, strata, TRUE)
+    result_val <- mantel_fleiss_crit(tbl, TRUE)
   )
 
   expect_identical(result, FALSE)
@@ -36,67 +35,59 @@ test_that("mantel_fleiss_crit() works with small stratified data", {
   expect_equal(attributes(result_val), list(value = 2.785714), tolerance = 1e-6)
 })
 
-test_that("mantel_fleiss_crit() works without strata", {
-  set.seed(123)
-  n <- 20
-  grp <- factor(sample(c("Active", "Control"), n, replace = TRUE))
-  rsp <- sample(c(TRUE, FALSE), n, replace = TRUE)
+test_that("mantel_fleiss_crit() works with 1 stratum", {
+  tbl <- array(c(4L, 4L, 7L, 5L), dim = c(2L, 2L, 1L))
 
-  # No explicit strata.
   expect_silent(
-    result <- mantel_fleiss_crit(grp, rsp)
+    result <- mantel_fleiss_crit(tbl)
   )
   expect_silent(
-    result_val <- mantel_fleiss_crit(grp, rsp, include_value = TRUE)
+    result_val <- mantel_fleiss_crit(tbl, TRUE)
   )
-
-  # Explicit stratum.
-  strata <- factor(rep("A", n))
-  expect_silent(
-    result_1stratum <- mantel_fleiss_crit(grp, rsp, strata)
-  )
-  expect_silent(
-    result_1stratum_val <- mantel_fleiss_crit(grp, rsp, strata, TRUE)
-  )
-
-  expect_identical(result, result_1stratum)
-  expect_identical(result_val, result_1stratum_val)
 
   expect_identical(result, FALSE)
   expect_identical(result_val, result, ignore_attr = TRUE)
   expect_equal(attributes(result_val), list(value = 3.6), tolerance = 1e-6)
 })
 
-test_that("mantel_fleiss_crit() ignores unused strata levels", {
-  set.seed(123)
-  n <- 40
-
-  grp <- factor(sample(c("Active", "Control"), n, replace = TRUE))
-  rsp <- sample(c(TRUE, FALSE), n, replace = TRUE)
-  strata <- factor(
-    sample(LETTERS[1:3], n, replace = TRUE),
-    levels = LETTERS[1:4]
+test_that("mantel_fleiss_crit() ignores unobserved strata levels", {
+  tbl <- array(
+    c(1L, 4L, 3L, 3L, 5L, 0L, 7L, 4L, 0L, 0L, 0L, 0L, 3L, 1L, 0L, 6L),
+    dim = c(2L, 2L, 4L)
   )
 
   expect_silent(
-    result <- mantel_fleiss_crit(grp, rsp, strata)
+    result <- mantel_fleiss_crit(tbl)
   )
   expect_silent(
-    result_val <- mantel_fleiss_crit(grp, rsp, strata, TRUE)
+    result_val <- mantel_fleiss_crit(tbl, TRUE)
   )
 
   expect_identical(result, TRUE)
   expect_identical(result_val, result, ignore_attr = TRUE)
-  expect_equal(attributes(result_val), list(value = 5.73951), tolerance = 1e-6)
+  expect_equal(attributes(result_val), list(value = 5.231818), tolerance = 1e-6)
+})
+
+test_that("mantel_fleiss_crit() works with all cell counts equal to zero", {
+  tbl <- array(rep(0L, 16L), dim = c(2L, 2L, 4L))
+
+  expect_silent(
+    result <- mantel_fleiss_crit(tbl)
+  )
+  expect_silent(
+    result_val <- mantel_fleiss_crit(tbl, TRUE)
+  )
+
+  expect_identical(result, FALSE)
+  expect_identical(result_val, result, ignore_attr = TRUE)
+  expect_equal(attributes(result_val), list(value = 0), tolerance = 1e-6)
 })
 
 test_that("mantel_fleiss_crit() handles a stratum with observations in one cell only", {
-  grp <- factor(c("Act", "Act", "Cntrl", "Cntrl", "Act", "Act", "Act", "Act"))
-  rsp <- c(TRUE, FALSE, TRUE, FALSE, TRUE, TRUE, TRUE, TRUE)
-  strata <- factor(c(rep("A", 4), rep("B", 4)))
+  tbl <- array(c(1L, 1L, 1L, 1L, 0L, 4L, 0L, 0L), dim = c(2L, 2L, 2L))
 
-  result <- mantel_fleiss_crit(grp, rsp, strata)
-  result_val <- mantel_fleiss_crit(grp, rsp, strata, TRUE)
+  result <- mantel_fleiss_crit(tbl)
+  result_val <- mantel_fleiss_crit(tbl, TRUE)
 
   expect_identical(result, FALSE)
   expect_identical(result_val, result, ignore_attr = TRUE)
@@ -104,47 +95,52 @@ test_that("mantel_fleiss_crit() handles a stratum with observations in one cell 
 })
 
 test_that("mantel_fleiss_crit() includes the MF = 5 boundary", {
-  grp <- factor(c(rep("Active", 10), rep("Control", 20)))
-  rsp <- c(rep(c(TRUE, FALSE), 5), rep(c(TRUE, FALSE), 10))
+  tbl <- array(c(5L, 5L, 10L, 10L), dim = c(2L, 2L, 1L))
 
-  result <- mantel_fleiss_crit(grp, rsp, include_value = TRUE)
+  result <- mantel_fleiss_crit(tbl, include_value = TRUE)
+
   expect_identical(result, TRUE, ignore_attr = TRUE)
   expect_identical(attributes(result), list(value = 5))
 })
 
-test_that("mantel_fleiss_crit() handles only TRUE responses", {
-  grp <- factor(rep(c("Active", "Control"), each = 5))
-  rsp <- rep(TRUE, 10)
-  strata <- factor(rep(c("A", "B"), each = 5))
+test_that("mantel_fleiss_crit() handles data with no non-responses", {
+  tbl <- array(c(2L, 4L, 0L, 0L), dim = c(2L, 2L, 2L))
 
-  result <- mantel_fleiss_crit(grp, rsp, strata)
-  result_val <- mantel_fleiss_crit(grp, rsp, strata, TRUE)
+  result <- mantel_fleiss_crit(tbl)
+  result_val <- mantel_fleiss_crit(tbl, TRUE)
 
   expect_identical(result, FALSE)
   expect_identical(result_val, result, ignore_attr = TRUE)
   expect_identical(attributes(result_val), list(value = 0))
 })
 
-test_that("mantel_fleiss_crit() handles only FALSE responses", {
-  grp <- factor(rep(c("Active", "Control"), each = 5))
-  rsp <- rep(FALSE, 10)
-  strata <- factor(rep(c("A", "B"), each = 5))
+test_that("mantel_fleiss_crit() handles data with no responses", {
+  tbl <- array(c(0L, 0L, 4L, 0L), dim = c(2L, 2L, 2L))
 
-  result <- mantel_fleiss_crit(grp, rsp, strata)
-  result_val <- mantel_fleiss_crit(grp, rsp, strata, TRUE)
+  result <- mantel_fleiss_crit(tbl)
+  result_val <- mantel_fleiss_crit(tbl, TRUE)
 
   expect_identical(result, FALSE)
   expect_identical(result_val, result, ignore_attr = TRUE)
   expect_identical(attributes(result_val), list(value = 0))
 })
 
-test_that("mantel_fleiss_crit() works with observations from one group only", {
-  grp <- factor(rep("Active", 8), levels = c("Active", "Control"))
-  rsp <- c(TRUE, FALSE, TRUE, FALSE, TRUE, FALSE, TRUE, FALSE)
-  strata <- factor(rep(c("A", "B"), each = 4))
+test_that("mantel_fleiss_crit() works with observations from one group only (Gr1)", {
+  tbl <- array(c(46L, 0L, 4L, 0L), dim = c(2L, 2L, 2L))
 
-  result <- mantel_fleiss_crit(grp, rsp, strata)
-  result_val <- mantel_fleiss_crit(grp, rsp, strata, TRUE)
+  result <- mantel_fleiss_crit(tbl)
+  result_val <- mantel_fleiss_crit(tbl, TRUE)
+
+  expect_identical(result, FALSE)
+  expect_identical(result_val, result, ignore_attr = TRUE)
+  expect_identical(attributes(result_val), list(value = 0))
+})
+
+test_that("mantel_fleiss_crit() works with observations from one group only (Gr2)", {
+  tbl <- array(c(0L, 30L, 0L, 3L), dim = c(2L, 2L, 2L))
+
+  result <- mantel_fleiss_crit(tbl)
+  result_val <- mantel_fleiss_crit(tbl, TRUE)
 
   expect_identical(result, FALSE)
   expect_identical(result_val, result, ignore_attr = TRUE)
@@ -152,29 +148,25 @@ test_that("mantel_fleiss_crit() works with observations from one group only", {
 })
 
 test_that("mantel_fleiss_crit() validates inputs", {
-  grp <- factor(c("G1", "G1", "G2", "G2"))
-  rsp <- c(TRUE, FALSE, TRUE, FALSE)
-  strata <- factor(c("A", "A", "B", "B"))
+  # tbl
+  expect_error(mantel_fleiss_crit(matrix(1L, nrow = 2, ncol = 2)))
+  expect_error(mantel_fleiss_crit(array(1L, dim = c(2L, 2L, 2L, 1L))))
+  expect_error(mantel_fleiss_crit(array(1L, dim = c(3L, 2L, 2L))))
+  expect_error(mantel_fleiss_crit(array(1L, dim = c(2L, 3L, 2L))))
 
-  # grp
-  expect_error(mantel_fleiss_crit(factor(rep("G1", 4)), rsp))
-  expect_error(mantel_fleiss_crit(factor(grp, levels = c("G1", "G2", "X")), rsp))
-  expect_error(mantel_fleiss_crit(as.character(grp), rsp))
-  expect_error(mantel_fleiss_crit(as.numeric(grp), rsp))
-  expect_error(mantel_fleiss_crit(c(grp[-1], NA), rsp))
-  # rsp
-  expect_error(mantel_fleiss_crit(grp, as.character(rsp)))
-  expect_error(mantel_fleiss_crit(grp, as.numeric(rsp)))
-  expect_error(mantel_fleiss_crit(grp, c(rsp[-2], NA)))
-  # strata
-  expect_error(mantel_fleiss_crit(grp, rsp, as.character(strata)))
-  expect_error(mantel_fleiss_crit(grp, rsp, as.numeric(strata)))
-  expect_error(mantel_fleiss_crit(grp, rsp, c(strata[-3], NA)))
-  # result_val
-  expect_error(mantel_fleiss_crit(grp, rsp, strata, c(TRUE, FALSE)))
+  # Missing / invalid values.
+  dim3d <- c(2L, 2L, 2L)
+  expect_error(mantel_fleiss_crit(array(NA_integer_, dim = dim3d)))
+  expect_error(mantel_fleiss_crit(array("1", dim = dim3d)))
+  expect_error(mantel_fleiss_crit(array(NA_real_, dim = dim3d)))
+  expect_error(mantel_fleiss_crit(array(NaN, dim = dim3d)))
+  expect_error(mantel_fleiss_crit(array(-1, dim = dim3d)))
+  expect_error(mantel_fleiss_crit(array(-1L, dim = dim3d)))
+  expect_error(mantel_fleiss_crit(array(Inf, dim = dim3d)))
 
-  # Different lengths.
-  expect_error(mantel_fleiss_crit(grp[-1], rsp))
-  expect_error(mantel_fleiss_crit(grp, rsp[-1]))
-  expect_error(mantel_fleiss_crit(grp, rsp, strata[-2]))
+  # include_value
+  tbl <- array(1L, dim = c(2L, 2L, 3L))
+  expect_error(mantel_fleiss_crit(tbl, include_value = c(TRUE, FALSE)))
+  expect_error(mantel_fleiss_crit(tbl, include_value = 1L))
+  expect_error(mantel_fleiss_crit(tbl, include_value = 1))
 })

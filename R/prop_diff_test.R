@@ -486,23 +486,22 @@ prop_fisher <- function(tbl, alternative = c("two.sided", "less", "greater")) {
 #'
 #' @description `r lifecycle::badge("stable")`
 #'
-#' Computes the Mantel-Fleiss criterion for stratified 2 x 2 contingency tables
-#' defined by a group variable, a binary response variable, and stratification
-#' variable.
+#' Checks the Mantel-Fleiss criterion for stratified 2 x 2 contingency tables.
+#' Strata with all cell counts equal to zero are ignored.
 #'
 #' @details
 #' The Mantel-Fleiss statistic is calculated as
 #'
 #' \deqn{
 #' MF = \min\left(
-#' [\sum_h m_{11h} - \sum_h (n_{11h})L],\
-#' [\sum_h (n{11h})U - \sum_h m{11h}]
-#' \right).
+#' [\sum_h m_{11h} - \sum_h {(n_{11h})}_L],\
+#' [\sum_h {(n_{11h})}_U - \sum_h m_{11h}]
+#' \right),
 #' }
 #'
-#' Here, \eqn{h} indexes the strata. For each stratum \eqn{h}, the expected
-#' frequency of cell \eqn{(1, 1)} under the hypothesis of no association
-#' between group and response is
+#' where \eqn{h} indexes the strata. For each stratum \eqn{h}, the expected
+#' frequency of cell \eqn{(1, 1)} in table \eqn{h}, under the hypothesis of no
+#' association between group and response, is
 #'
 #' \deqn{
 #' m_{11h} = \frac{n_{1.h} n_{.1h}}{n_h}.
@@ -512,23 +511,21 @@ prop_fisher <- function(tbl, alternative = c("two.sided", "less", "greater")) {
 #' are:
 #'
 #' \deqn{
-#' (n_{11h})L = \max(0, n{1.h} - n_{.2h}),
+#' {(n_{11h})}_L = \max(0, n_{1.h} - n_{.2h}),
 #' }
 #' \deqn{
-#' (n_{11h})U = \min(n{.1h}, n_{1.h}).
+#' {(n_{11h})}_U = \min(n_{.1h}, n_{1.h}).
 #' }
 #'
 #' The Mantel-Fleiss criterion is satisfied when \eqn{MF \ge 5}.
 #'
-#' @param grp (`factor`)\cr
-#'   A factor assigning observations to one of two groups (e.g., reference
-#'   and treatment). It must have exactly two levels.
-#' @param rsp (`logical`)\cr
-#'   A logical vector indicating whether each observation is a responder.
-#' @param strata (`factor` or `NULL`)\cr
-#'   An optional factor defining the stratification variable. Each unique
-#'   stratum defines a separate 2 x 2 contingency table. If `NULL`, an
-#'   unstratified analysis is performed.
+#' @param tbl (`array`)\cr
+#'   A three-dimensional contingency table containing the counts for each
+#'   combination of group, response, and stratum. The first two dimensions
+#'   must correspond to the two variables defining the 2 x 2 contingency
+#'   table (group and response), in either order. The third dimension must
+#'   correspond to the strata. The first two dimensions must each have exactly
+#'   two levels. All cell values must be finite, non-missing integer counts.
 #' @param include_value (`logical(1)`)\cr
 #'   Whether to include the calculated Mantel-Fleiss statistic as an attribute
 #'   of the result.
@@ -549,10 +546,11 @@ prop_fisher <- function(tbl, alternative = c("two.sided", "less", "greater")) {
 #' strata2 <- factor(sample(c("x", "y"), n, replace = TRUE))
 #' strata <- interaction(strata1, strata2)
 #'
-#' table(grp, rsp, strata)
+#' tbl <- table(grp, rsp, strata)
+#' tbl
 #'
-#' mantel_fleiss_crit(grp, rsp, strata)
-#' mantel_fleiss_crit(grp, rsp, strata, include_value = TRUE)
+#' mantel_fleiss_crit(tbl)
+#' mantel_fleiss_crit(tbl, include_value = TRUE)
 #'
 #' @references
 #' Mantel, N., and Fleiss, J. L. (1980).
@@ -561,29 +559,16 @@ prop_fisher <- function(tbl, alternative = c("two.sided", "less", "greater")) {
 #' \emph{American Journal of Epidemiology}, 112(1), 129--134
 #'
 #' @export
-mantel_fleiss_crit <- function(grp, rsp, strata = NULL, include_value = FALSE) {
-  checkmate::assert_logical(rsp, any.missing = FALSE)
-  checkmate::assert_factor(grp, len = length(rsp), any.missing = FALSE, n.levels = 2)
-  checkmate::assert_factor(strata, len = length(rsp), any.missing = FALSE, null.ok = TRUE)
+mantel_fleiss_crit <- function(tbl, include_value = FALSE) {
+  checkmate::assert_array(tbl, mode = "integerish", any.missing = FALSE, d = 3L)
+  checkmate::assert_true(all(tbl >= 0L))
+  checkmate::assert_true(all(is.finite(tbl)))
+  checkmate::assert_true(nrow(tbl) == 2L)
+  checkmate::assert_true(ncol(tbl) == 2L)
   checkmate::assert_flag(include_value)
 
-  # 1. Pre-process data
-
-  # Make rsp a factor to handle cases with only TRUE or only FALSE.
-  rsp <- factor(rsp, levels = c("TRUE", "FALSE"))
-
-  # Use a dummy stratum for an unstratified analysis.
-  strata <- if (is.null(strata)) {
-    rep("DUMMY", length(rsp))
-  } else {
-    # Drop strata with no observations.
-    droplevels(strata)
-  }
-
-  # 2. Calculate Mantel-Fleiss criterion
-
-  # The order of dimensions is important: group x response x stratum.
-  tbl <- table(grp, rsp, strata)
+  # Drop strata with no observations.
+  tbl <- tbl[, , apply(tbl, 3L, sum) > 0, drop = FALSE]
 
   # Add marginal totals over the group and response dimensions,
   # retaining the stratum dimension.
@@ -595,9 +580,9 @@ mantel_fleiss_crit <- function(grp, rsp, strata = NULL, include_value = FALSE) {
   n <- tbl_mrgn["Sum", "Sum", ]
 
   # Expected value of n_11 under the hypothesis of no association
-  # between group and response within a given stratum.
+  # between group and response (within a given stratum).
   m_11 <- (n_1dot * n_dot1) / n
-  # Lower and upper bounds for n_11 given the marginal totals.
+  # Lower and upper bounds for n_11 given the marginal totals (within a given stratum).
   n_11_lwr <- pmax(0L, n_1dot - n_dot2)
   n_11_upr <- pmin(n_dot1, n_1dot)
 

@@ -4,20 +4,16 @@
 \alias{mantel_fleiss_crit}
 \title{Check the Mantel-Fleiss Criterion}
 \usage{
-mantel_fleiss_crit(grp, rsp, strata = NULL, include_value = FALSE)
+mantel_fleiss_crit(tbl, include_value = FALSE)
 }
 \arguments{
-\item{grp}{(\code{factor})\cr
-A factor assigning observations to one of two groups (e.g., reference
-and treatment). It must have exactly two levels.}
-
-\item{rsp}{(\code{logical})\cr
-A logical vector indicating whether each observation is a responder.}
-
-\item{strata}{(\code{factor} or \code{NULL})\cr
-An optional factor defining the stratification variable. Each unique
-stratum defines a separate 2 x 2 contingency table. If \code{NULL}, an
-unstratified analysis is performed.}
+\item{tbl}{(\code{array})\cr
+A three-dimensional contingency table containing the counts for each
+combination of group, response, and stratum. The first two dimensions
+must correspond to the two variables defining the 2 x 2 contingency
+table (group and response), in either order. The third dimension must
+correspond to the strata. The first two dimensions must each have exactly
+two levels. All cell values must be finite, non-missing integer counts.}
 
 \item{include_value}{(\code{logical(1)})\cr
 Whether to include the calculated Mantel-Fleiss statistic as an attribute
@@ -31,23 +27,22 @@ is satisfied. If \code{include_value = TRUE}, the result also contains a
 \description{
 \ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
 
-Computes the Mantel-Fleiss criterion for stratified 2 x 2 contingency tables
-defined by a group variable, a binary response variable, and stratification
-variable.
+Checks the Mantel-Fleiss criterion for stratified 2 x 2 contingency tables.
+Strata with all cell counts equal to zero are ignored.
 }
 \details{
 The Mantel-Fleiss statistic is calculated as
 
 \deqn{
 MF = \min\left(
-[\sum_h m_{11h} - \sum_h (n_{11h})L],\
-[\sum_h (n{11h})U - \sum_h m{11h}]
-\right).
+[\sum_h m_{11h} - \sum_h {(n_{11h})}_L],\
+[\sum_h {(n_{11h})}_U - \sum_h m_{11h}]
+\right),
 }
 
-Here, \eqn{h} indexes the strata. For each stratum \eqn{h}, the expected
-frequency of cell \eqn{(1, 1)} under the hypothesis of no association
-between group and response is
+where \eqn{h} indexes the strata. For each stratum \eqn{h}, the expected
+frequency of cell \eqn{(1, 1)} in table \eqn{h}, under the hypothesis of no
+association between group and response, is
 
 \deqn{
 m_{11h} = \frac{n_{1.h} n_{.1h}}{n_h}.
@@ -57,10 +52,10 @@ The lower and upper bounds for \eqn{n_{11h}}, given the marginal totals,
 are:
 
 \deqn{
-(n_{11h})L = \max(0, n{1.h} - n_{.2h}),
+{(n_{11h})}_L = \max(0, n_{1.h} - n_{.2h}),
 }
 \deqn{
-(n_{11h})U = \min(n{.1h}, n_{1.h}).
+{(n_{11h})}_U = \min(n_{.1h}, n_{1.h}).
 }
 
 The Mantel-Fleiss criterion is satisfied when \eqn{MF \ge 5}.
@@ -75,10 +70,11 @@ strata1 <- factor(sample(c("A", "B"), n, replace = TRUE))
 strata2 <- factor(sample(c("x", "y"), n, replace = TRUE))
 strata <- interaction(strata1, strata2)
 
-table(grp, rsp, strata)
+tbl <- table(grp, rsp, strata)
+tbl
 
-mantel_fleiss_crit(grp, rsp, strata)
-mantel_fleiss_crit(grp, rsp, strata, include_value = TRUE)
+mantel_fleiss_crit(tbl)
+mantel_fleiss_crit(tbl, include_value = TRUE)
 
 }
 \references{
