@@ -4,7 +4,7 @@
 \alias{mantel_fleiss_crit}
 \title{Check the Mantel-Fleiss Criterion}
 \usage{
-mantel_fleiss_crit(grp, rsp, strata = NULL, details = FALSE)
+mantel_fleiss_crit(grp, rsp, strata = NULL, include_value = FALSE)
 }
 \arguments{
 \item{grp}{(\code{factor})\cr
@@ -19,16 +19,14 @@ An optional factor defining the stratification variable. Each unique
 stratum defines a separate 2 x 2 contingency table. If \code{NULL}, an
 unstratified analysis is performed.}
 
-\item{details}{(\code{logical(1)})\cr
-Whether to attach the calculated Mantel-Fleiss statistic and criterion
-to the returned value as attributes.}
+\item{include_value}{(\code{logical(1)})\cr
+Whether to include the calculated Mantel-Fleiss statistic as an attribute
+of the result.}
 }
 \value{
 A logical value indicating whether the Mantel-Fleiss criterion
-is satisfied.
-If \code{details = TRUE}, the result has two additional attributes:
-\code{value}, containing the calculated Mantel-Fleiss statistic,
-and \code{criterion}, containing the criterion used for evaluation.
+is satisfied. If \code{include_value = TRUE}, the result also contains a
+\code{value} attribute with the calculated Mantel-Fleiss statistic.
 }
 \description{
 \ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
@@ -80,7 +78,7 @@ strata <- interaction(strata1, strata2)
 table(grp, rsp, strata)
 
 mantel_fleiss_crit(grp, rsp, strata)
-mantel_fleiss_crit(grp, rsp, strata, details = TRUE)
+mantel_fleiss_crit(grp, rsp, strata, include_value = TRUE)
 
 }
 \references{

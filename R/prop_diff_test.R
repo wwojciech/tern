@@ -529,15 +529,13 @@ prop_fisher <- function(tbl, alternative = c("two.sided", "less", "greater")) {
 #'   An optional factor defining the stratification variable. Each unique
 #'   stratum defines a separate 2 x 2 contingency table. If `NULL`, an
 #'   unstratified analysis is performed.
-#' @param details (`logical(1)`)\cr
-#'   Whether to attach the calculated Mantel-Fleiss statistic and criterion
-#'   to the returned value as attributes.
+#' @param include_value (`logical(1)`)\cr
+#'   Whether to include the calculated Mantel-Fleiss statistic as an attribute
+#'   of the result.
 #'
 #' @return A logical value indicating whether the Mantel-Fleiss criterion
-#'   is satisfied.
-#'   If `details = TRUE`, the result has two additional attributes:
-#'   `value`, containing the calculated Mantel-Fleiss statistic,
-#'   and `criterion`, containing the criterion used for evaluation.
+#'   is satisfied. If `include_value = TRUE`, the result also contains a
+#'   `value` attribute with the calculated Mantel-Fleiss statistic.
 #'
 #' @author WW
 #'
@@ -554,7 +552,7 @@ prop_fisher <- function(tbl, alternative = c("two.sided", "less", "greater")) {
 #' table(grp, rsp, strata)
 #'
 #' mantel_fleiss_crit(grp, rsp, strata)
-#' mantel_fleiss_crit(grp, rsp, strata, details = TRUE)
+#' mantel_fleiss_crit(grp, rsp, strata, include_value = TRUE)
 #'
 #' @references
 #' Mantel, N., and Fleiss, J. L. (1980).
@@ -563,11 +561,11 @@ prop_fisher <- function(tbl, alternative = c("two.sided", "less", "greater")) {
 #' \emph{American Journal of Epidemiology}, 112(1), 129--134
 #'
 #' @export
-mantel_fleiss_crit <- function(grp, rsp, strata = NULL, details = FALSE) {
+mantel_fleiss_crit <- function(grp, rsp, strata = NULL, include_value = FALSE) {
   checkmate::assert_logical(rsp, any.missing = FALSE)
   checkmate::assert_factor(grp, len = length(rsp), any.missing = FALSE, n.levels = 2)
   checkmate::assert_factor(strata, len = length(rsp), any.missing = FALSE, null.ok = TRUE)
-  checkmate::assert_flag(details)
+  checkmate::assert_flag(include_value)
 
   # 1. Pre-process data
 
@@ -591,28 +589,26 @@ mantel_fleiss_crit <- function(grp, rsp, strata = NULL, details = FALSE) {
   # retaining the stratum dimension.
   tbl_mrgn <- stats::addmargins(tbl, margin = 1:2)
 
-  n_1.h <- tbl_mrgn[1L, "Sum", ] # nolintr
-  n_.1h <- tbl_mrgn["Sum", 1L, ] # nolintr
-  n_.2h <- tbl_mrgn["Sum", 2L, ] # nolintr
-  n_h <- tbl_mrgn["Sum", "Sum", ] # nolintr
+  n_1dot <- tbl_mrgn[1L, "Sum", ]
+  n_dot1 <- tbl_mrgn["Sum", 1L, ]
+  n_dot2 <- tbl_mrgn["Sum", 2L, ]
+  n <- tbl_mrgn["Sum", "Sum", ]
 
-  # Expected value of n_11h under the hypothesis of no association
-  # between group and response within stratum h.
-  m_11h <- (n_1.h * n_.1h) / n_h
-  # Lower and upper bounds for n_11h given the marginal totals.
-  n_11h_lwr <- pmax(0L, n_1.h - n_.2h)
-  n_11h_upr <- pmin(n_.1h, n_1.h)
+  # Expected value of n_11 under the hypothesis of no association
+  # between group and response within a given stratum.
+  m_11 <- (n_1dot * n_dot1) / n
+  # Lower and upper bounds for n_11 given the marginal totals.
+  n_11_lwr <- pmax(0L, n_1dot - n_dot2)
+  n_11_upr <- pmin(n_dot1, n_1dot)
 
-  MF <- min( # nolintr
-    sum(m_11h) - sum(n_11h_lwr),
-    sum(n_11h_upr) - sum(m_11h)
+  mf_value <- min(
+    sum(m_11) - sum(n_11_lwr),
+    sum(n_11_upr) - sum(m_11)
   )
 
-  crit <- quote(MF >= 5)
-  is_satisfied <- eval(crit)
-  if (details) {
-    attr(is_satisfied, "value") <- MF
-    attr(is_satisfied, "criterion") <- deparse(crit)
+  is_satisfied <- mf_value >= 5
+  if (include_value) {
+    attr(is_satisfied, "value") <- mf_value
   }
 
   is_satisfied

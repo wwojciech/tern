@@ -9,16 +9,12 @@ test_that("mantel_fleiss_crit() works with multiple observations and strata", {
     result <- mantel_fleiss_crit(grp, rsp, strata)
   )
   expect_silent(
-    result_det <- mantel_fleiss_crit(grp, rsp, strata, TRUE)
+    result_val <- mantel_fleiss_crit(grp, rsp, strata, TRUE)
   )
 
   expect_identical(result, TRUE)
-  expect_identical(result_det, result, ignore_attr = TRUE)
-  expect_equal(
-    attributes(result_det),
-    list(value = 20.16857, criterion = "MF >= 5"),
-    tolerance = 1e-6
-  )
+  expect_identical(result_val, result, ignore_attr = TRUE)
+  expect_equal(attributes(result_val), list(value = 20.16857), tolerance = 1e-6)
 })
 
 test_that("mantel_fleiss_crit() works with small stratified data", {
@@ -32,16 +28,12 @@ test_that("mantel_fleiss_crit() works with small stratified data", {
     result <- mantel_fleiss_crit(grp, rsp, strata)
   )
   expect_silent(
-    result_det <- mantel_fleiss_crit(grp, rsp, strata, TRUE)
+    result_val <- mantel_fleiss_crit(grp, rsp, strata, TRUE)
   )
 
   expect_identical(result, FALSE)
-  expect_identical(result_det, result, ignore_attr = TRUE)
-  expect_equal(
-    attributes(result_det),
-    list(value = 2.785714, criterion = "MF >= 5"),
-    tolerance = 1e-6
-  )
+  expect_identical(result_val, result, ignore_attr = TRUE)
+  expect_equal(attributes(result_val), list(value = 2.785714), tolerance = 1e-6)
 })
 
 test_that("mantel_fleiss_crit() works without strata", {
@@ -55,7 +47,7 @@ test_that("mantel_fleiss_crit() works without strata", {
     result <- mantel_fleiss_crit(grp, rsp)
   )
   expect_silent(
-    result_det <- mantel_fleiss_crit(grp, rsp, details = TRUE)
+    result_val <- mantel_fleiss_crit(grp, rsp, include_value = TRUE)
   )
 
   # Explicit stratum.
@@ -67,15 +59,11 @@ test_that("mantel_fleiss_crit() works without strata", {
   )
 
   expect_identical(result, result_1stratum)
-  expect_identical(result_det, result_1stratum_det)
+  expect_identical(result_val, result_1stratum_det)
 
   expect_identical(result, FALSE)
-  expect_identical(result_det, result, ignore_attr = TRUE)
-  expect_equal(
-    attributes(result_det),
-    list(value = 3.6, criterion = "MF >= 5"),
-    tolerance = 1e-6
-  )
+  expect_identical(result_val, result, ignore_attr = TRUE)
+  expect_equal(attributes(result_val), list(value = 3.6), tolerance = 1e-6)
 })
 
 test_that("mantel_fleiss_crit() ignores unused strata levels", {
@@ -93,16 +81,12 @@ test_that("mantel_fleiss_crit() ignores unused strata levels", {
     result <- mantel_fleiss_crit(grp, rsp, strata)
   )
   expect_silent(
-    result_det <- mantel_fleiss_crit(grp, rsp, strata, TRUE)
+    result_val <- mantel_fleiss_crit(grp, rsp, strata, TRUE)
   )
 
   expect_identical(result, TRUE)
-  expect_identical(result_det, result, ignore_attr = TRUE)
-  expect_equal(
-    attributes(result_det),
-    list(value = 5.73951, criterion = "MF >= 5"),
-    tolerance = 1e-6
-  )
+  expect_identical(result_val, result, ignore_attr = TRUE)
+  expect_equal(attributes(result_val), list(value = 5.73951), tolerance = 1e-6)
 })
 
 test_that("mantel_fleiss_crit() handles a stratum with observations in one cell only", {
@@ -111,24 +95,20 @@ test_that("mantel_fleiss_crit() handles a stratum with observations in one cell 
   strata <- factor(c(rep("A", 4), rep("B", 4)))
 
   result <- mantel_fleiss_crit(grp, rsp, strata)
-  result_det <- mantel_fleiss_crit(grp, rsp, strata, TRUE)
+  result_val <- mantel_fleiss_crit(grp, rsp, strata, TRUE)
 
   expect_identical(result, FALSE)
-  expect_identical(result_det, result, ignore_attr = TRUE)
-  expect_equal(
-    attributes(result_det),
-    list(value = 1, criterion = "MF >= 5"),
-    tolerance = 1e-6
-  )
+  expect_identical(result_val, result, ignore_attr = TRUE)
+  expect_equal(attributes(result_val), list(value = 1), tolerance = 1e-6)
 })
 
 test_that("mantel_fleiss_crit() includes the MF = 5 boundary", {
   grp <- factor(c(rep("Active", 10), rep("Control", 20)))
   rsp <- c(rep(c(TRUE, FALSE), 5), rep(c(TRUE, FALSE), 10))
 
-  result <- mantel_fleiss_crit(grp, rsp, details = TRUE)
+  result <- mantel_fleiss_crit(grp, rsp, include_value = TRUE)
   expect_identical(result, TRUE, ignore_attr = TRUE)
-  expect_identical(attributes(result), list(value = 5, criterion = "MF >= 5"))
+  expect_identical(attributes(result), list(value = 5))
 })
 
 test_that("mantel_fleiss_crit() handles only TRUE responses", {
@@ -137,11 +117,11 @@ test_that("mantel_fleiss_crit() handles only TRUE responses", {
   strata <- factor(rep(c("A", "B"), each = 5))
 
   result <- mantel_fleiss_crit(grp, rsp, strata)
-  result_det <- mantel_fleiss_crit(grp, rsp, strata, TRUE)
+  result_val <- mantel_fleiss_crit(grp, rsp, strata, TRUE)
 
   expect_identical(result, FALSE)
-  expect_identical(result_det, result, ignore_attr = TRUE)
-  expect_identical(attributes(result_det), list(value = 0, criterion = "MF >= 5"))
+  expect_identical(result_val, result, ignore_attr = TRUE)
+  expect_identical(attributes(result_val), list(value = 0))
 })
 
 test_that("mantel_fleiss_crit() handles only FALSE responses", {
@@ -150,11 +130,11 @@ test_that("mantel_fleiss_crit() handles only FALSE responses", {
   strata <- factor(rep(c("A", "B"), each = 5))
 
   result <- mantel_fleiss_crit(grp, rsp, strata)
-  result_det <- mantel_fleiss_crit(grp, rsp, strata, TRUE)
+  result_val <- mantel_fleiss_crit(grp, rsp, strata, TRUE)
 
   expect_identical(result, FALSE)
-  expect_identical(result_det, result, ignore_attr = TRUE)
-  expect_identical(attributes(result_det), list(value = 0, criterion = "MF >= 5"))
+  expect_identical(result_val, result, ignore_attr = TRUE)
+  expect_identical(attributes(result_val), list(value = 0))
 })
 
 test_that("mantel_fleiss_crit() works with observations from one group only", {
@@ -163,11 +143,11 @@ test_that("mantel_fleiss_crit() works with observations from one group only", {
   strata <- factor(rep(c("A", "B"), each = 4))
 
   result <- mantel_fleiss_crit(grp, rsp, strata)
-  result_det <- mantel_fleiss_crit(grp, rsp, strata, TRUE)
+  result_val <- mantel_fleiss_crit(grp, rsp, strata, TRUE)
 
   expect_identical(result, FALSE)
-  expect_identical(result_det, result, ignore_attr = TRUE)
-  expect_identical(attributes(result_det), list(value = 0, criterion = "MF >= 5"))
+  expect_identical(result_val, result, ignore_attr = TRUE)
+  expect_identical(attributes(result_val), list(value = 0))
 })
 
 test_that("mantel_fleiss_crit() validates inputs", {
@@ -189,8 +169,8 @@ test_that("mantel_fleiss_crit() validates inputs", {
   expect_error(mantel_fleiss_crit(grp, rsp, as.character(strata)))
   expect_error(mantel_fleiss_crit(grp, rsp, as.numeric(strata)))
   expect_error(mantel_fleiss_crit(grp, rsp, c(strata[-3], NA)))
-  # details
-  expect_error(mantel_fleiss_crit(grp, rsp, strata, details = c(TRUE, FALSE)))
+  # result_val
+  expect_error(mantel_fleiss_crit(grp, rsp, strata, c(TRUE, FALSE)))
 
   # Different lengths.
   expect_error(mantel_fleiss_crit(grp[-1], rsp))
