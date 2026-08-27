@@ -562,8 +562,6 @@ prop_fisher <- function(tbl, alternative = c("two.sided", "less", "greater")) {
 #' One-Degree-of-Freedom Chi-Square Test and a Related Rapid Procedure.
 #' \emph{American Journal of Epidemiology}, 112(1), 129--134
 #'
-#' SAS Institute Inc. \emph{SAS/STAT User's Guide: The FREQ Procedure}.
-#'
 #' @export
 mantel_fleiss_crit <- function(grp, rsp, strata = NULL, details = FALSE) {
   checkmate::assert_logical(rsp, any.missing = FALSE)
@@ -601,13 +599,13 @@ mantel_fleiss_crit <- function(grp, rsp, strata = NULL, details = FALSE) {
   # Expected value of n_11h under the hypothesis of no association
   # between group and response within stratum h.
   m_11h <- (n_1.h * n_.1h) / n_h
-  # Lower (L) and upper (U) bounds for n_11h given the marginal totals.
-  n_11h_L <- pmax(0L, n_1.h - n_.2h) # nolintr
-  n_11h_U <- pmin(n_.1h, n_1.h) # nolintr
+  # Lower and upper bounds for n_11h given the marginal totals.
+  n_11h_lwr <- pmax(0L, n_1.h - n_.2h)
+  n_11h_upr <- pmin(n_.1h, n_1.h)
 
   MF <- min( # nolintr
-    sum(m_11h) - sum(n_11h_L),
-    sum(n_11h_U) - sum(m_11h)
+    sum(m_11h) - sum(n_11h_lwr),
+    sum(n_11h_upr) - sum(m_11h)
   )
 
   crit <- quote(MF >= 5)

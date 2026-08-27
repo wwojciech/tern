@@ -88,8 +88,6 @@ Mantel, N., and Fleiss, J. L. (1980).
 Minimum Expected Cell Size Requirements for the Mantel-Haenszel
 One-Degree-of-Freedom Chi-Square Test and a Related Rapid Procedure.
 \emph{American Journal of Epidemiology}, 112(1), 129--134
-
-SAS Institute Inc. \emph{SAS/STAT User's Guide: The FREQ Procedure}.
 }
 \author{
 WW
