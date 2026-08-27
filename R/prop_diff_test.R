@@ -481,3 +481,141 @@ prop_fisher <- function(tbl, alternative = c("two.sided", "less", "greater")) {
   tbl <- tbl[, c("TRUE", "FALSE")]
   stats::fisher.test(tbl, alternative = alternative)$p.value
 }
+
+#' @title Check the Mantel-Fleiss Criterion
+#'
+#' @description `r lifecycle::badge("stable")`
+#'
+#' Computes the Mantel-Fleiss criterion for stratified 2 x 2 contingency tables
+#' defined by a group variable, a binary response variable, and stratification
+#' variable.
+#'
+#' @details
+#' The Mantel-Fleiss statistic is calculated as
+#'
+#' \deqn{
+#' MF = \min\left(
+#' [\sum_h m_{11h} - \sum_h (n_{11h})L],\
+#' [\sum_h (n{11h})U - \sum_h m{11h}]
+#' \right).
+#' }
+#'
+#' Here, \eqn{h} indexes the strata. For each stratum \eqn{h}, the expected
+#' frequency of cell \eqn{(1, 1)} under the hypothesis of no association
+#' between group and response is
+#'
+#' \deqn{
+#' m_{11h} = \frac{n_{1.h} n_{.1h}}{n_h}.
+#' }
+#'
+#' The lower and upper bounds for \eqn{n_{11h}}, given the marginal totals,
+#' are:
+#'
+#' \deqn{
+#' (n_{11h})L = \max(0, n{1.h} - n_{.2h}),
+#' }
+#' \deqn{
+#' (n_{11h})U = \min(n{.1h}, n_{1.h}).
+#' }
+#'
+#' The Mantel-Fleiss criterion is satisfied when \eqn{MF \ge 5}.
+#'
+#' @param grp (`factor`)\cr
+#'   A factor assigning observations to one of two groups (e.g., reference
+#'   and treatment). It must have exactly two levels.
+#' @param rsp (`logical`)\cr
+#'   A logical vector indicating whether each observation is a responder.
+#' @param strata (`factor` or `NULL`)\cr
+#'   An optional factor defining the stratification variable. Each unique
+#'   stratum defines a separate 2 x 2 contingency table. If `NULL`, an
+#'   unstratified analysis is performed.
+#' @param details (`logical(1)`)\cr
+#'   Whether to attach the calculated Mantel-Fleiss statistic and criterion
+#'   to the returned value as attributes.
+#'
+#' @return A logical value indicating whether the Mantel-Fleiss criterion
+#'   is satisfied.
+#'   If `details = TRUE`, the result has two additional attributes:
+#'   `value`, containing the calculated Mantel-Fleiss statistic,
+#'   and `criterion`, containing the criterion used for evaluation.
+#'
+#' @author WW
+#'
+#' @examples
+#' set.seed(123)
+#' n <- 40
+#'
+#' grp <- factor(sample(c("Active", "Control"), n, replace = TRUE))
+#' rsp <- sample(c(TRUE, FALSE), n, replace = TRUE)
+#' strata1 <- factor(sample(c("A", "B"), n, replace = TRUE))
+#' strata2 <- factor(sample(c("x", "y"), n, replace = TRUE))
+#' strata <- interaction(strata1, strata2)
+#'
+#' table(grp, rsp, strata)
+#'
+#' mantel_fleiss_crit(grp, rsp, strata)
+#' mantel_fleiss_crit(grp, rsp, strata, details = TRUE)
+#'
+#' @references
+#' Mantel, N., and Fleiss, J. L. (1980).
+#' Minimum Expected Cell Size Requirements for the Mantel-Haenszel
+#' One-Degree-of-Freedom Chi-Square Test and a Related Rapid Procedure.
+#' \emph{American Journal of Epidemiology}, 112(1), 129--134
+#'
+#' SAS Institute Inc. \emph{SAS/STAT User's Guide: The FREQ Procedure}.
+#'
+#' @export
+mantel_fleiss_crit <- function(grp, rsp, strata = NULL, details = FALSE) {
+  checkmate::assert_logical(rsp, any.missing = FALSE)
+  checkmate::assert_factor(grp, len = length(rsp), any.missing = FALSE, n.levels = 2)
+  checkmate::assert_factor(strata, len = length(rsp), any.missing = FALSE, null.ok = TRUE)
+  checkmate::assert_flag(details)
+
+  # 1. Pre-process data
+
+  # Make rsp a factor to handle cases with only TRUE or only FALSE.
+  rsp <- factor(rsp, levels = c("TRUE", "FALSE"))
+
+  # Use a dummy stratum for an unstratified analysis.
+  strata <- if (is.null(strata)) {
+    rep("DUMMY", length(rsp))
+  } else {
+    # Drop strata with no observations.
+    droplevels(strata)
+  }
+
+  # The order of dimensions is important: group x response x stratum.
+  tbl <- table(grp, rsp, strata)
+
+  # 2. Calculate Mantel-Fleiss criterion
+
+  # Add marginal totals over the group and response dimensions,
+  # retaining the stratum dimension.
+  tbl_mrgn <- stats::addmargins(tbl, margin = 1:2)
+
+  n_1.h <- tbl_mrgn[1L, "Sum", ] # nolintr
+  n_.1h <- tbl_mrgn["Sum", 1L, ] # nolintr
+  n_.2h <- tbl_mrgn["Sum", 2L, ] # nolintr
+  n_h <- tbl_mrgn["Sum", "Sum", ] # nolintr
+
+  # Expected value of n_11h under the hypothesis of no association
+  # between group and response within stratum h.
+  m_11h <- (n_1.h * n_.1h) / n_h
+  # Lower (L) and upper (U) bounds for n_11h given the marginal totals.
+  n_11h_L <- pmax(0L, n_1.h - n_.2h) # nolintr
+  n_11h_U <- pmin(n_.1h, n_1.h) # nolintr
+
+  MF <- min( # nolintr
+    sum(m_11h) - sum(n_11h_L),
+    sum(n_11h_U) - sum(m_11h)
+  )
+
+  crit <- quote(MF >= 5)
+  is_satisfied <- eval(crit)
+  if (details) {
+    attr(is_satisfied, "value") <- MF
+    attr(is_satisfied, "criterion") <- deparse(crit)
+  }
+
+  is_satisfied
+}

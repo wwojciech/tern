@@ -1,6 +1,8 @@
 # tern 0.9.11.9000
 
 ### Enhancements
+* Added `mantel_fleiss_crit()` to check the Mantel-Fleiss criterion
+  for stratified 2 x 2 contingency tables.(#1512)
 * Updated `g_forest()` to support point estimates and confidence intervals
   stored in a single column. (#1499)
 * Added the `exclude_rows` argument to `g_forest()` to allow excluding selected
