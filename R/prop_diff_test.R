@@ -584,10 +584,10 @@ mantel_fleiss_crit <- function(grp, rsp, strata = NULL, details = FALSE) {
     droplevels(strata)
   }
 
+  # 2. Calculate Mantel-Fleiss criterion
+
   # The order of dimensions is important: group x response x stratum.
   tbl <- table(grp, rsp, strata)
-
-  # 2. Calculate Mantel-Fleiss criterion
 
   # Add marginal totals over the group and response dimensions,
   # retaining the stratum dimension.
