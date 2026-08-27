@@ -487,7 +487,6 @@ prop_fisher <- function(tbl, alternative = c("two.sided", "less", "greater")) {
 #' @description `r lifecycle::badge("stable")`
 #'
 #' Checks the Mantel-Fleiss criterion for stratified 2 x 2 contingency tables.
-#' Strata with all cell counts equal to zero are ignored.
 #'
 #' @details
 #' The Mantel-Fleiss statistic is calculated as
@@ -499,9 +498,9 @@ prop_fisher <- function(tbl, alternative = c("two.sided", "less", "greater")) {
 #' \right),
 #' }
 #'
-#' where \eqn{h} indexes the strata. For each stratum \eqn{h}, the expected
-#' frequency of cell \eqn{(1, 1)} in table \eqn{h}, under the hypothesis of no
-#' association between group and response, is
+#' where \eqn{h} indexes the non-empty strata. For each stratum \eqn{h}, the
+#' expected frequency of cell \eqn{(1, 1)} in table \eqn{h}, under the
+#' hypothesis of no association between group and response, is
 #'
 #' \deqn{
 #' m_{11h} = \frac{n_{1.h} n_{.1h}}{n_h}.
@@ -519,6 +518,12 @@ prop_fisher <- function(tbl, alternative = c("two.sided", "less", "greater")) {
 #'
 #' The Mantel-Fleiss criterion is satisfied when \eqn{MF \ge 5}.
 #'
+#' Strata with all cell counts equal to zero are excluded from the
+#' calculation. If all strata contain zero observations, there are no
+#' non-empty strata over which to calculate the Mantel-Fleiss statistic, and
+#' the statistic is therefore undefined. In this case, the function returns
+#' `NA`.
+#'
 #' @param tbl (`array`)\cr
 #'   A three-dimensional contingency table containing the counts for each
 #'   combination of group, response, and stratum. The first two dimensions
@@ -531,8 +536,10 @@ prop_fisher <- function(tbl, alternative = c("two.sided", "less", "greater")) {
 #'   of the result.
 #'
 #' @return A logical value indicating whether the Mantel-Fleiss criterion
-#'   is satisfied. If `include_value = TRUE`, the result also contains a
-#'   `value` attribute with the calculated Mantel-Fleiss statistic.
+#' is satisfied. If `include_value = TRUE`, the result also contains a
+#' value attribute with the calculated Mantel-Fleiss statistic. If there
+#' are no non-empty strata, the result is `NA` and the value attribute is
+#' `NA_real_`.
 #'
 #' @author WW
 #'
@@ -556,7 +563,7 @@ prop_fisher <- function(tbl, alternative = c("two.sided", "less", "greater")) {
 #' Mantel, N., and Fleiss, J. L. (1980).
 #' Minimum Expected Cell Size Requirements for the Mantel-Haenszel
 #' One-Degree-of-Freedom Chi-Square Test and a Related Rapid Procedure.
-#' \emph{American Journal of Epidemiology}, 112(1), 129--134
+#' \emph{American Journal of Epidemiology}, 112(1), 129--134.
 #'
 #' @export
 mantel_fleiss_crit <- function(tbl, include_value = FALSE) {
@@ -573,6 +580,16 @@ mantel_fleiss_crit <- function(tbl, include_value = FALSE) {
   # Add marginal totals over the group and response dimensions,
   # retaining the stratum dimension.
   tbl_mrgn <- stats::addmargins(tbl, margin = 1:2)
+
+  # If there are no non-empty strata, the Mantel-Fleiss criterion is undefined
+  # because there are no strata over which to calculate it.
+  if (dim(tbl)[3L] == 0L) {
+    is_satisfied <- NA
+    if (include_value) {
+      attr(is_satisfied, "value") <- NA_real_
+    }
+    return(is_satisfied)
+  }
 
   n_1dot <- tbl_mrgn[1L, "Sum", ]
   n_dot1 <- tbl_mrgn["Sum", 1L, ]

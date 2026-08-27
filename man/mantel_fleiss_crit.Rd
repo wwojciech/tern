@@ -22,13 +22,14 @@ of the result.}
 \value{
 A logical value indicating whether the Mantel-Fleiss criterion
 is satisfied. If \code{include_value = TRUE}, the result also contains a
-\code{value} attribute with the calculated Mantel-Fleiss statistic.
+value attribute with the calculated Mantel-Fleiss statistic. If there
+are no non-empty strata, the result is \code{NA} and the value attribute is
+\code{NA_real_}.
 }
 \description{
 \ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
 
 Checks the Mantel-Fleiss criterion for stratified 2 x 2 contingency tables.
-Strata with all cell counts equal to zero are ignored.
 }
 \details{
 The Mantel-Fleiss statistic is calculated as
@@ -40,9 +41,9 @@ MF = \min\left(
 \right),
 }
 
-where \eqn{h} indexes the strata. For each stratum \eqn{h}, the expected
-frequency of cell \eqn{(1, 1)} in table \eqn{h}, under the hypothesis of no
-association between group and response, is
+where \eqn{h} indexes the non-empty strata. For each stratum \eqn{h}, the
+expected frequency of cell \eqn{(1, 1)} in table \eqn{h}, under the
+hypothesis of no association between group and response, is
 
 \deqn{
 m_{11h} = \frac{n_{1.h} n_{.1h}}{n_h}.
@@ -59,6 +60,12 @@ are:
 }
 
 The Mantel-Fleiss criterion is satisfied when \eqn{MF \ge 5}.
+
+Strata with all cell counts equal to zero are excluded from the
+calculation. If all strata contain zero observations, there are no
+non-empty strata over which to calculate the Mantel-Fleiss statistic, and
+the statistic is therefore undefined. In this case, the function returns
+\code{NA}.
 }
 \examples{
 set.seed(123)
@@ -81,7 +88,7 @@ mantel_fleiss_crit(tbl, include_value = TRUE)
 Mantel, N., and Fleiss, J. L. (1980).
 Minimum Expected Cell Size Requirements for the Mantel-Haenszel
 One-Degree-of-Freedom Chi-Square Test and a Related Rapid Procedure.
-\emph{American Journal of Epidemiology}, 112(1), 129--134
+\emph{American Journal of Epidemiology}, 112(1), 129--134.
 }
 \author{
 WW

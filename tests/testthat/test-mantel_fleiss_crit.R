@@ -68,7 +68,7 @@ test_that("mantel_fleiss_crit() ignores unobserved strata levels", {
   expect_equal(attributes(result_val), list(value = 5.231818), tolerance = 1e-6)
 })
 
-test_that("mantel_fleiss_crit() works with all cell counts equal to zero", {
+test_that("mantel_fleiss_crit() returns NA when all cell counts equal zero", {
   tbl <- array(rep(0L, 16L), dim = c(2L, 2L, 4L))
 
   expect_silent(
@@ -78,9 +78,9 @@ test_that("mantel_fleiss_crit() works with all cell counts equal to zero", {
     result_val <- mantel_fleiss_crit(tbl, TRUE)
   )
 
-  expect_identical(result, FALSE)
+  expect_identical(result, NA)
   expect_identical(result_val, result, ignore_attr = TRUE)
-  expect_equal(attributes(result_val), list(value = 0), tolerance = 1e-6)
+  expect_identical(attributes(result_val), list(value = NA_real_))
 })
 
 test_that("mantel_fleiss_crit() handles a stratum with observations in one cell only", {
