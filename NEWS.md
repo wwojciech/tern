@@ -7,6 +7,10 @@
   stored in a single column. (#1499)
 * Added the `exclude_rows` argument to `g_forest()` to allow excluding selected
   rows from the forest plot before plotting. (#1498)
+
+# tern 0.9.11
+
+### Enhancements
 * Added `factor_level_method` argument to `df_explicit_na()` to control factor level ordering
   when converting character or logical columns. Supported methods: `"sort_auto"` (default,
   locale-aware, preserves original behavior), `"sort_radix"` (byte-order / ASCII sort), and
