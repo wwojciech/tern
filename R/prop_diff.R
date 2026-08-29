@@ -366,6 +366,51 @@ estimate_proportion_diff <- function(lyt,
   )
 }
 
+#' @title Validate Data for a Proportion Analysis
+#'
+#' @description `r lifecycle::badge("stable")`
+#'
+#' Validates the data required for a proportion analysis, including responder
+#' status, group assignment, and optional stratification.
+#'
+#' @param rsp (`logical`)\cr
+#'   Indicates whether each observation is a responder (`TRUE`) or a
+#'   non-responder (`FALSE)`. Missing values are not allowed.
+#' @param grp (`factor`)\cr
+#'   Assigns each observation to one of two groups, such as a reference and a
+#'   treatment group. Must have exactly two levels and the same length as
+#'   rsp. Missing values are not allowed.
+#' @param strata (`factor` or `NULL`)\cr
+#'   Defines the stratification variable. When supplied, it must have the same
+#'   length as rsp and must not contain missing values.
+#'
+#' @return
+#' Invisibly returns `NULL`. An error is raised if any input does not meet
+#' the required conditions.
+#'
+#' @examples
+#' rsp <- c(TRUE, TRUE, FALSE, TRUE, FALSE, FALSE)
+#' grp <- factor(c(rep("Placebo", 3), rep("X", 3)))
+#' strata <- factor(c("A", "A", "B", "A", "B", "B"))
+#'
+#' assert_prop_data(rsp, grp, strata)
+#'
+#' \dontrun{
+#' # An error is raised when `grp` has only one level.
+#' grp <- factor(rep("X", 6))
+#' assert_prop_data(rsp, grp, strata)
+#' }
+#'
+#' @author WW
+#'
+#' @export
+assert_prop_data <- function(rsp, grp, strata = NULL) {
+  checkmate::assert_logical(rsp, any.missing = FALSE)
+  checkmate::assert_factor(grp, len = length(rsp), any.missing = FALSE, n.levels = 2)
+  checkmate::assert_factor(strata, len = length(rsp), any.missing = FALSE, null.ok = TRUE)
+  invisible()
+}
+
 #' Check proportion difference arguments
 #'
 #' @description `r lifecycle::badge("stable")`
@@ -375,6 +420,8 @@ estimate_proportion_diff <- function(lyt,
 #'
 #' @inheritParams prop_diff
 #' @inheritParams prop_diff_wald
+#'
+#' @seealso [assert_prop_data()]
 #'
 #' @examples
 #' # example code
@@ -394,16 +441,68 @@ check_diff_prop_ci <- function(rsp,
                                strata = NULL,
                                conf_level,
                                correct = NULL) {
-  checkmate::assert_logical(rsp, any.missing = FALSE)
-  checkmate::assert_factor(grp, len = length(rsp), any.missing = FALSE, n.levels = 2)
+  assert_prop_data(rsp = rsp, grp = grp, strata = strata)
   checkmate::assert_number(conf_level, lower = 0, upper = 1)
   checkmate::assert_flag(correct, null.ok = TRUE)
-
-  if (!is.null(strata)) {
-    checkmate::assert_factor(strata, len = length(rsp))
-  }
-
   invisible()
+}
+
+#' @title Construct 2 x 2 Contingency Tables Safely
+#'
+#' @description `r lifecycle::badge("stable")`
+#'
+#' Creates a 2 x 2 contingency table of responder status by group, optionally
+#' stratified by a third factor. The function validates the input vectors and
+#' ensures that the responder variable contains both possible outcomes
+#' (`TRUE` and `FALSE`) in the resulting table, even when one outcome is not
+#' observed in the data.
+#'
+#' When strata is not supplied, a single 2 x 2 contingency table is returned.
+#' When strata is supplied, a separate 2 x 2 contingency table is created
+#' for each stratum.
+#'
+#' @inheritParams assert_prop_data
+#'
+#' @return
+#' A contingency table produced by [base::table()].
+#'
+#' When strata is `NULL`, a 2 x 2 table is returned, with `grp` defining the rows
+#' and `rsp` defining the columns. The `rsp` dimension always contains the levels
+#' `TRUE` and `FALSE`, in that order, including when one outcome is not observed.
+#'
+#' When `strata` is supplied, a 3-dimensional contingency table with dimensions
+#' 2 x 2 x k is returned, where k is the number of levels of strata.
+#' The dimensions correspond to `grp`, `rsp`, and `strata`, respectively.
+#'
+#' @seealso [assert_prop_data()]
+#'
+#' @author WW
+#' @export
+#'
+#' @examples
+#' rsp <- c(TRUE, TRUE, FALSE, TRUE, FALSE, FALSE)
+#' grp <- factor(c(rep("Placebo", 3), rep("X", 3)))
+#'
+#' safe_2x2_table(rsp, grp)
+#'
+#' # The FALSE/TRUE levels are retained even when only one outcome is observed.
+#' safe_2x2_table(rep(TRUE, 6), grp)
+#'
+#' # Stratified 2 x 2 tables
+#' strata <- factor(c(rep("S1", 3), rep("S2", 3)))
+#'
+#' safe_2x2_table(rsp, grp, strata)
+safe_2x2_table <- function(rsp, grp, strata = NULL) {
+  assert_prop_data(rsp = rsp, grp = grp, strata = strata)
+
+  # Make rsp a factor to handle cases with only TRUE or only FALSE.
+  rsp <- factor(rsp, levels = c("TRUE", "FALSE"))
+
+  if (is.null(strata)) {
+    table(grp, rsp)
+  } else {
+    table(grp, rsp, strata)
+  }
 }
 
 #' Description of method used for proportion comparison
