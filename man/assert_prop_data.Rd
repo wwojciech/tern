@@ -14,11 +14,11 @@ non-responder (\verb{FALSE)}. Missing values are not allowed.}
 \item{grp}{(\code{factor})\cr
 Assigns each observation to one of two groups, such as a reference and a
 treatment group. Must have exactly two levels and the same length as
-rsp. Missing values are not allowed.}
+\code{rsp}. Missing values are not allowed.}
 
 \item{strata}{(\code{factor} or \code{NULL})\cr
 Defines the stratification variable. When supplied, it must have the same
-length as rsp and must not contain missing values.}
+length as \code{rsp} and must not contain missing values.}
 }
 \value{
 Invisibly returns \code{NULL}. An error is raised if any input does not meet

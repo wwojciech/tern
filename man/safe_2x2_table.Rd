@@ -14,11 +14,11 @@ non-responder (\verb{FALSE)}. Missing values are not allowed.}
 \item{grp}{(\code{factor})\cr
 Assigns each observation to one of two groups, such as a reference and a
 treatment group. Must have exactly two levels and the same length as
-rsp. Missing values are not allowed.}
+\code{rsp}. Missing values are not allowed.}
 
 \item{strata}{(\code{factor} or \code{NULL})\cr
 Defines the stratification variable. When supplied, it must have the same
-length as rsp and must not contain missing values.}
+length as \code{rsp} and must not contain missing values.}
 }
 \value{
 A contingency table produced by \code{\link[base:table]{base::table()}}.
@@ -45,16 +45,19 @@ When strata is supplied, a separate 2 x 2 contingency table is created
 for each stratum.
 }
 \examples{
-rsp <- c(TRUE, TRUE, FALSE, TRUE, FALSE, FALSE)
-grp <- factor(c(rep("Placebo", 3), rep("X", 3)))
+rsp <- c(TRUE, TRUE, FALSE, TRUE, FALSE, FALSE, FALSE, TRUE)
+grp <- factor(c(rep("Placebo", 4), rep("X", 4)))
 
-safe_2x2_table(rsp, grp)
+tbl <- safe_2x2_table(rsp, grp)
+
+# Example use case: Fisher's exact test.
+prop_fisher(tbl)
 
 # The FALSE/TRUE levels are retained even when only one outcome is observed.
-safe_2x2_table(rep(TRUE, 6), grp)
+safe_2x2_table(rep(TRUE, 8), grp)
 
-# Stratified 2 x 2 tables
-strata <- factor(c(rep("S1", 3), rep("S2", 3)))
+# Stratified 2 x 2 tables.
+strata <- factor(c(rep("S1", 4), rep("S2", 4)))
 
 safe_2x2_table(rsp, grp, strata)
 }
