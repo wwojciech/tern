@@ -482,7 +482,7 @@ prop_fisher <- function(tbl, alternative = c("two.sided", "less", "greater")) {
   stats::fisher.test(tbl, alternative = alternative)$p.value
 }
 
-#' @title Check the Mantel-Fleiss Criterion
+#' Check the Mantel-Fleiss Criterion
 #'
 #' @description `r lifecycle::badge("stable")`
 #'
