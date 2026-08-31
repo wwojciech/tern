@@ -390,20 +390,6 @@ estimate_proportion_diff <- function(lyt,
 #'
 #' @author WW
 #' @keywords internal
-#'
-#' @examples
-#' \dontrun{
-#' rsp <- c(TRUE, TRUE, FALSE, TRUE, FALSE, FALSE)
-#' grp <- factor(c(rep("Placebo", 3), rep("X", 3)))
-#' strata <- factor(c("A", "A", "B", "A", "B", "B"))
-#'
-#' tern:::assert_prop_data(rsp, grp, strata)
-#'
-#' # An error is raised when `grp` has only one level.
-#' grp <- factor(rep("X", 6))
-#' tern:::assert_prop_data(rsp, grp, strata)
-#' }
-#'
 assert_prop_data <- function(rsp, grp, strata = NULL) {
   checkmate::assert_logical(rsp, any.missing = FALSE)
   checkmate::assert_factor(grp, len = length(rsp), any.missing = FALSE, n.levels = 2)
