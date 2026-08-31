@@ -31,13 +31,13 @@ Validates the data required for a proportion analysis, including responder
 status, group assignment, and optional stratification.
 }
 \examples{
+\dontrun{
 rsp <- c(TRUE, TRUE, FALSE, TRUE, FALSE, FALSE)
 grp <- factor(c(rep("Placebo", 3), rep("X", 3)))
 strata <- factor(c("A", "A", "B", "A", "B", "B"))
 
 assert_prop_data(rsp, grp, strata)
 
-\dontrun{
 # An error is raised when `grp` has only one level.
 grp <- factor(rep("X", 6))
 assert_prop_data(rsp, grp, strata)
@@ -47,3 +47,4 @@ assert_prop_data(rsp, grp, strata)
 \author{
 WW
 }
+\keyword{internal}
