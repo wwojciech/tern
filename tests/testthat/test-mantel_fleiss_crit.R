@@ -147,6 +147,17 @@ test_that("mantel_fleiss_crit() works with observations from one group only (Gr2
   expect_identical(attributes(result_val), list(value = 0))
 })
 
+test_that("mantel_fleiss_crit() respects the threshold", {
+  tbl <- array(c(5L, 5L, 10L, 10L), dim = c(2L, 2L, 1L))
+
+  expect_identical(mantel_fleiss_crit(tbl, threshold = 5), TRUE)
+  expect_identical(mantel_fleiss_crit(tbl, threshold = 6), FALSE)
+
+  result <- mantel_fleiss_crit(tbl, include_value = TRUE, threshold = 6)
+  expect_identical(result, FALSE, ignore_attr = TRUE)
+  expect_identical(attributes(result), list(value = 5))
+})
+
 test_that("mantel_fleiss_crit() validates inputs", {
   # tbl
   expect_error(mantel_fleiss_crit(matrix(1L, nrow = 2, ncol = 2)))
@@ -169,4 +180,10 @@ test_that("mantel_fleiss_crit() validates inputs", {
   expect_error(mantel_fleiss_crit(tbl, include_value = c(TRUE, FALSE)))
   expect_error(mantel_fleiss_crit(tbl, include_value = 1L))
   expect_error(mantel_fleiss_crit(tbl, include_value = 1))
+
+  # threshold
+  expect_error(mantel_fleiss_crit(tbl, threshold = c(5, 10)))
+  expect_error(mantel_fleiss_crit(tbl, threshold = "5"))
+  expect_error(mantel_fleiss_crit(tbl, threshold = NA_real_))
+  expect_error(mantel_fleiss_crit(tbl, threshold = NaN))
 })
