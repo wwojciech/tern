@@ -17,8 +17,8 @@ treatment group. Must have exactly two levels and the same length as
 \code{rsp}. Missing values are not allowed.}
 
 \item{strata}{(\code{factor} or \code{NULL})\cr
-Defines the stratification variable. When supplied, it must have the same
-length as \code{rsp} and must not contain missing values.}
+Defines the stratification variable. If not \code{NULL}, it must have the same
+length as \code{rsp} and must not contain any missing values.}
 }
 \value{
 A contingency table produced by \code{\link[base:table]{base::table()}}.
@@ -62,7 +62,7 @@ strata <- factor(c(rep("S1", 4), rep("S2", 4)))
 safe_2x2_table(rsp, grp, strata)
 }
 \seealso{
-\code{\link[=assert_prop_data]{assert_prop_data()}}
+\code{\link[=assert_proportion_data]{assert_proportion_data()}}
 }
 \author{
 WW

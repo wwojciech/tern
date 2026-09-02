@@ -113,7 +113,7 @@ reference:
       - -h_xticks
       - -prop_diff
       - check_diff_prop_ci
-      - assert_prop_data
+      - assert_proportion_data
       - safe_2x2_table
 
   - title: rtables Helper Functions

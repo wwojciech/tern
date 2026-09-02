@@ -381,8 +381,8 @@ estimate_proportion_diff <- function(lyt,
 #'   treatment group. Must have exactly two levels and the same length as
 #'   `rsp`. Missing values are not allowed.
 #' @param strata (`factor` or `NULL`)\cr
-#'   Defines the stratification variable. When supplied, it must have the same
-#'   length as `rsp` and must not contain missing values.
+#'   Defines the stratification variable. If not `NULL`, it must have the same
+#'   length as `rsp` and must not contain any missing values.
 #'
 #' @return
 #' Invisibly returns `NULL`. An error is raised if any input does not meet
@@ -396,14 +396,14 @@ estimate_proportion_diff <- function(lyt,
 #' grp <- factor(c(rep("Placebo", 3), rep("X", 3)))
 #' strata <- factor(c("A", "A", "B", "A", "B", "B"))
 #'
-#' assert_prop_data(rsp, grp, strata)
+#' assert_proportion_data(rsp, grp, strata)
 #'
 #' \dontrun{
 #' # An error is raised when `grp` has only one level.
 #' grp <- factor(rep("X", 6))
-#' assert_prop_data(rsp, grp, strata)
+#' assert_proportion_data(rsp, grp, strata)
 #' }
-assert_prop_data <- function(rsp, grp, strata = NULL) {
+assert_proportion_data <- function(rsp, grp, strata = NULL) {
   checkmate::assert_logical(rsp, any.missing = FALSE)
   checkmate::assert_factor(grp, len = length(rsp), any.missing = FALSE, n.levels = 2)
   checkmate::assert_factor(strata, len = length(rsp), any.missing = FALSE, null.ok = TRUE)
@@ -420,7 +420,7 @@ assert_prop_data <- function(rsp, grp, strata = NULL) {
 #' @inheritParams prop_diff
 #' @inheritParams prop_diff_wald
 #'
-#' @seealso [assert_prop_data()]
+#' @seealso [assert_proportion_data()]
 #'
 #' @examples
 #' # example code
@@ -460,7 +460,7 @@ check_diff_prop_ci <- function(rsp,
 #' When strata is supplied, a separate 2 x 2 contingency table is created
 #' for each stratum.
 #'
-#' @inheritParams assert_prop_data
+#' @inheritParams assert_proportion_data
 #'
 #' @return
 #' A contingency table produced by [base::table()].
@@ -473,7 +473,7 @@ check_diff_prop_ci <- function(rsp,
 #' 2 x 2 x k is returned, where k is the number of levels of strata.
 #' The dimensions correspond to `grp`, `rsp`, and `strata`, respectively.
 #'
-#' @seealso [assert_prop_data()]
+#' @seealso [assert_proportion_data()]
 #'
 #' @author WW
 #' @export

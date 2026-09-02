@@ -2,7 +2,7 @@
 
 ### Enhancements
 * Added `safe_2x2_table()` to construct 2 x 2 x k contingency tables safely.
-* Added `assert_prop_data()` to validate responder, group, and optional
+* Added `assert_proportion_data()` to validate responder, group, and optional
   stratification data used in proportion analyses.
 
 # tern 0.9.11
