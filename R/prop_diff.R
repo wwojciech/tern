@@ -440,7 +440,7 @@ check_diff_prop_ci <- function(rsp,
                                strata = NULL,
                                conf_level,
                                correct = NULL) {
-  assert_prop_data(rsp = rsp, grp = grp, strata = strata)
+  assert_proportion_data(rsp = rsp, grp = grp, strata = strata)
   checkmate::assert_number(conf_level, lower = 0, upper = 1)
   checkmate::assert_flag(correct, null.ok = TRUE)
   invisible()
@@ -495,7 +495,7 @@ check_diff_prop_ci <- function(rsp,
 #'
 #' safe_2x2_table(rsp, grp, strata)
 safe_2x2_table <- function(rsp, grp, strata = NULL) {
-  assert_prop_data(rsp = rsp, grp = grp, strata = strata)
+  assert_proportion_data(rsp = rsp, grp = grp, strata = strata)
 
   # Make rsp a factor to handle cases with only TRUE or only FALSE.
   rsp <- factor(rsp, levels = c("TRUE", "FALSE"))
