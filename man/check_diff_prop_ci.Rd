@@ -38,6 +38,3 @@ dta <- data.frame(
 )
 check_diff_prop_ci(rsp = dta[["rsp"]], grp = dta[["grp"]], conf_level = 0.95)
 }
-\seealso{
-\code{\link[=assert_proportion_data]{assert_proportion_data()}}
-}

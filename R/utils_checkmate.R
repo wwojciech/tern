@@ -180,3 +180,38 @@ assert_proportion_value <- function(x, include_boundaries = FALSE) {
     checkmate::assert_true(x < 1)
   }
 }
+
+#' @describeIn assertions
+#' Validates the data required for a proportion analysis, including responder
+#' status, group assignment, and optional stratification.
+#'
+#' @param rsp (`logical`)\cr
+#'   Indicates whether each observation is a responder (`TRUE`) or a
+#'   non-responder (`FALSE)`. Missing values are not allowed.
+#' @param grp (`factor`)\cr
+#'   Assigns each observation to one of two groups, such as a reference and a
+#'   treatment group. Must have exactly two levels and the same length as
+#'   `rsp`. Missing values are not allowed.
+#' @param strata (`factor` or `NULL`)\cr
+#'   Defines the stratification variable. If not `NULL`, it must have the same
+#'   length as `rsp` and must not contain any missing values.
+#'
+#' @export
+#'
+#' @examples
+#' rsp <- c(TRUE, TRUE, FALSE, TRUE, FALSE, FALSE)
+#' grp <- factor(c(rep("Placebo", 3), rep("X", 3)))
+#' strata <- factor(c("A", "A", "B", "A", "B", "B"))
+#'
+#' assert_proportion_data(rsp, grp, strata)
+#'
+#' \dontrun{
+#' # An error is raised when `grp` has only one level.
+#' grp <- factor(rep("X", 6))
+#' assert_proportion_data(rsp, grp, strata)
+#' }
+assert_proportion_data <- function(rsp, grp, strata = NULL) {
+  checkmate::assert_logical(rsp, any.missing = FALSE)
+  checkmate::assert_factor(grp, len = length(rsp), any.missing = FALSE, n.levels = 2)
+  checkmate::assert_factor(strata, len = length(rsp), any.missing = FALSE, null.ok = TRUE)
+}

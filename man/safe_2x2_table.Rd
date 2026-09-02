@@ -61,9 +61,6 @@ strata <- factor(c(rep("S1", 4), rep("S2", 4)))
 
 safe_2x2_table(rsp, grp, strata)
 }
-\seealso{
-\code{\link[=assert_proportion_data]{assert_proportion_data()}}
-}
 \author{
 WW
 }
