@@ -484,7 +484,7 @@ prop_fisher <- function(tbl, alternative = c("two.sided", "less", "greater")) {
 
 #' Check the Mantel-Fleiss Criterion
 #'
-#' @description `r lifecycle::badge("stable")`
+#' @description `r lifecycle::badge("experimental")`
 #'
 #' Checks the Mantel-Fleiss criterion for stratified 2 x 2 contingency tables.
 #'
@@ -516,7 +516,9 @@ prop_fisher <- function(tbl, alternative = c("two.sided", "less", "greater")) {
 #' {(n_{11h})}_U = \min(n_{.1h}, n_{1.h}).
 #' }
 #'
-#' The Mantel-Fleiss criterion is satisfied when \eqn{MF \ge 5}.
+#' The Mantel-Fleiss criterion is satisfied when \eqn{MF \ge} `threshold`.
+#' By default, `threshold = 5`, corresponding to the criterion described
+#' by Mantel and Fleiss (1980).
 #'
 #' Strata with all cell counts equal to zero are excluded from the
 #' calculation. If all strata contain zero observations, there are no
@@ -534,14 +536,15 @@ prop_fisher <- function(tbl, alternative = c("two.sided", "less", "greater")) {
 #' @param include_value (`logical(1)`)\cr
 #'   Whether to include the calculated Mantel-Fleiss statistic as an attribute
 #'   of the result.
+#' @param threshold (`numeric(1)`)\cr
+#'   The minimum Mantel-Fleiss statistic required for the criterion to be
+#'   considered satisfied.
 #'
 #' @return A logical value indicating whether the Mantel-Fleiss criterion
 #' is satisfied. If `include_value = TRUE`, the result also contains a
 #' value attribute with the calculated Mantel-Fleiss statistic. If there
 #' are no non-empty strata, the result is `NA` and the value attribute is
 #' `NA_real_`.
-#'
-#' @author WW
 #'
 #' @examples
 #' set.seed(123)
@@ -556,8 +559,18 @@ prop_fisher <- function(tbl, alternative = c("two.sided", "less", "greater")) {
 #' tbl <- table(grp, rsp, strata)
 #' tbl
 #'
-#' mantel_fleiss_crit(tbl)
+#' is_mf_satisfied <- mantel_fleiss_crit(tbl)
+#' is_mf_satisfied
 #' mantel_fleiss_crit(tbl, include_value = TRUE)
+#'
+#' # Example of use.
+#' if (is_mf_satisfied) {
+#'   print("CMH")
+#'   prop_cmh(tbl)
+#' } else {
+#'   print("Fisher")
+#'   prop_fisher(table(grp, rsp))
+#' }
 #'
 #' @references
 #' Mantel, N., and Fleiss, J. L. (1980).
@@ -566,13 +579,14 @@ prop_fisher <- function(tbl, alternative = c("two.sided", "less", "greater")) {
 #' \emph{American Journal of Epidemiology}, 112(1), 129--134.
 #'
 #' @export
-mantel_fleiss_crit <- function(tbl, include_value = FALSE) {
+mantel_fleiss_crit <- function(tbl, include_value = FALSE, threshold = 5L) {
   checkmate::assert_array(tbl, mode = "integerish", any.missing = FALSE, d = 3L)
   checkmate::assert_true(all(tbl >= 0L))
   checkmate::assert_true(all(is.finite(tbl)))
   checkmate::assert_true(nrow(tbl) == 2L)
   checkmate::assert_true(ncol(tbl) == 2L)
   checkmate::assert_flag(include_value)
+  checkmate::assert_number(threshold)
 
   # Drop strata with no observations.
   tbl <- tbl[, , apply(tbl, 3L, sum) > 0, drop = FALSE]
@@ -608,7 +622,7 @@ mantel_fleiss_crit <- function(tbl, include_value = FALSE) {
     sum(n_11_upr) - sum(m_11)
   )
 
-  is_satisfied <- mf_value >= 5
+  is_satisfied <- mf_value >= threshold
   if (include_value) {
     attr(is_satisfied, "value") <- mf_value
   }

@@ -4,7 +4,7 @@
 \alias{mantel_fleiss_crit}
 \title{Check the Mantel-Fleiss Criterion}
 \usage{
-mantel_fleiss_crit(tbl, include_value = FALSE)
+mantel_fleiss_crit(tbl, include_value = FALSE, threshold = 5L)
 }
 \arguments{
 \item{tbl}{(\code{array})\cr
@@ -18,6 +18,10 @@ two levels. All cell values must be finite, non-missing integer counts.}
 \item{include_value}{(\code{logical(1)})\cr
 Whether to include the calculated Mantel-Fleiss statistic as an attribute
 of the result.}
+
+\item{threshold}{(\code{numeric(1)})\cr
+The minimum Mantel-Fleiss statistic required for the criterion to be
+considered satisfied.}
 }
 \value{
 A logical value indicating whether the Mantel-Fleiss criterion
@@ -27,7 +31,7 @@ are no non-empty strata, the result is \code{NA} and the value attribute is
 \code{NA_real_}.
 }
 \description{
-\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
+\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#experimental}{\figure{lifecycle-experimental.svg}{options: alt='[Experimental]'}}}{\strong{[Experimental]}}
 
 Checks the Mantel-Fleiss criterion for stratified 2 x 2 contingency tables.
 }
@@ -59,7 +63,9 @@ are:
 {(n_{11h})}_U = \min(n_{.1h}, n_{1.h}).
 }
 
-The Mantel-Fleiss criterion is satisfied when \eqn{MF \ge 5}.
+The Mantel-Fleiss criterion is satisfied when \eqn{MF \ge} \code{threshold}.
+By default, \code{threshold = 5}, corresponding to the criterion described
+by Mantel and Fleiss (1980).
 
 Strata with all cell counts equal to zero are excluded from the
 calculation. If all strata contain zero observations, there are no
@@ -80,8 +86,18 @@ strata <- interaction(strata1, strata2)
 tbl <- table(grp, rsp, strata)
 tbl
 
-mantel_fleiss_crit(tbl)
+is_mf_satisfied <- mantel_fleiss_crit(tbl)
+is_mf_satisfied
 mantel_fleiss_crit(tbl, include_value = TRUE)
+
+# Example of use.
+if (is_mf_satisfied) {
+  print("CMH")
+  prop_cmh(tbl)
+} else {
+  print("Fisher")
+  prop_fisher(table(grp, rsp))
+}
 
 }
 \references{
@@ -89,7 +105,4 @@ Mantel, N., and Fleiss, J. L. (1980).
 Minimum Expected Cell Size Requirements for the Mantel-Haenszel
 One-Degree-of-Freedom Chi-Square Test and a Related Rapid Procedure.
 \emph{American Journal of Epidemiology}, 112(1), 129--134.
-}
-\author{
-WW
 }
