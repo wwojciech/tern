@@ -187,7 +187,7 @@ assert_proportion_value <- function(x, include_boundaries = FALSE) {
 #'
 #' @param rsp (`logical`)\cr
 #'   Indicates whether each observation is a responder (`TRUE`) or a
-#'   non-responder (`FALSE)`. Missing values are not allowed.
+#'   non-responder (`FALSE`). Missing values are not allowed.
 #' @param grp (`factor`)\cr
 #'   Assigns each observation to one of two groups, such as a reference and a
 #'   treatment group. Must have exactly two levels and the same length as

@@ -400,7 +400,7 @@ check_diff_prop_ci <- function(rsp,
   invisible()
 }
 
-#' @title Construct 2 x 2 Contingency Tables Safely
+#' Construct 2 x 2 Contingency Tables Safely
 #'
 #' @description `r lifecycle::badge("stable")`
 #'
@@ -427,7 +427,6 @@ check_diff_prop_ci <- function(rsp,
 #' 2 x 2 x k is returned, where k is the number of levels of strata.
 #' The dimensions correspond to `grp`, `rsp`, and `strata`, respectively.
 #'
-#' @author WW
 #' @export
 #'
 #' @examples
@@ -435,6 +434,7 @@ check_diff_prop_ci <- function(rsp,
 #' grp <- factor(c(rep("Placebo", 4), rep("X", 4)))
 #'
 #' tbl <- safe_2x2_table(rsp, grp)
+#' tbl
 #'
 #' # Example use case: Fisher's exact test.
 #' prop_fisher(tbl)
@@ -446,6 +446,7 @@ check_diff_prop_ci <- function(rsp,
 #' strata <- factor(c(rep("S1", 4), rep("S2", 4)))
 #'
 #' safe_2x2_table(rsp, grp, strata)
+#'
 safe_2x2_table <- function(rsp, grp, strata = NULL) {
   assert_proportion_data(rsp = rsp, grp = grp, strata = strata)
 

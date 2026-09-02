@@ -9,7 +9,7 @@ safe_2x2_table(rsp, grp, strata = NULL)
 \arguments{
 \item{rsp}{(\code{logical})\cr
 Indicates whether each observation is a responder (\code{TRUE}) or a
-non-responder (\verb{FALSE)}. Missing values are not allowed.}
+non-responder (\code{FALSE}). Missing values are not allowed.}
 
 \item{grp}{(\code{factor})\cr
 Assigns each observation to one of two groups, such as a reference and a
@@ -49,6 +49,7 @@ rsp <- c(TRUE, TRUE, FALSE, TRUE, FALSE, FALSE, FALSE, TRUE)
 grp <- factor(c(rep("Placebo", 4), rep("X", 4)))
 
 tbl <- safe_2x2_table(rsp, grp)
+tbl
 
 # Example use case: Fisher's exact test.
 prop_fisher(tbl)
@@ -60,7 +61,5 @@ safe_2x2_table(rep(TRUE, 8), grp)
 strata <- factor(c(rep("S1", 4), rep("S2", 4)))
 
 safe_2x2_table(rsp, grp, strata)
-}
-\author{
-WW
+
 }

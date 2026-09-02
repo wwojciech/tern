@@ -92,7 +92,7 @@ for proportions.}
 
 \item{rsp}{(\code{logical})\cr
 Indicates whether each observation is a responder (\code{TRUE}) or a
-non-responder (\verb{FALSE)}. Missing values are not allowed.}
+non-responder (\code{FALSE}). Missing values are not allowed.}
 
 \item{grp}{(\code{factor})\cr
 Assigns each observation to one of two groups, such as a reference and a
