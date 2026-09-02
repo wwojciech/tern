@@ -563,12 +563,21 @@ prop_fisher <- function(tbl, alternative = c("two.sided", "less", "greater")) {
 #' is_mf_satisfied
 #' mantel_fleiss_crit(tbl, include_value = TRUE)
 #'
-#' # Example of use.
+#' # Examples of use.
+#'
+#' if (is_mf_satisfied) {
+#'   print("CMH")
+#'   prop_diff_cmh(rsp, grp, strata)$prop
+#' } else {
+#'   print("Exact")
+#'   prop_diff_uncond_exact(rsp, grp)$prop
+#' }
+#'
 #' if (is_mf_satisfied) {
 #'   print("CMH")
 #'   prop_cmh(tbl)
 #' } else {
-#'   print("Fisher")
+#'   print("Exact")
 #'   prop_fisher(table(grp, rsp))
 #' }
 #'
